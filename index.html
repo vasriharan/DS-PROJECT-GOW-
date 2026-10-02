@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOD OF WAR: FATE'S MAZE | DSA Stack Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Audio Synthesizer (No external files needed) -->
+  <div class="app-wrapper">
+
+    <!-- Top Header -->
+    <header class="game-header">
+      <div class="header-left">
+        <div class="title-row">
+          <span class="norse-rune">ᚱ</span>
+          <h1 class="game-title">GOD OF WAR: FATE'S MAZE</h1>
+          <span class="badge-dsa">DSA DEMO: STACK (LIFO)</span>
+        </div>
+        <p class="story-snippet">
+          "Ragnarok has begun. Kratos has entered the frozen maze. Somewhere beyond the maze, Thor awaits."
+        </p>
+      </div>
+
+      <div class="header-right">
+        <!-- Status Bar -->
+        <div class="status-card" id="health-card" title="Kratos Health">
+          <span class="status-label">HEALTH</span>
+          <div class="hearts-container" id="hearts-container">
+            <span class="heart full" id="heart-1">❤️</span>
+            <span class="heart full" id="heart-2">❤️</span>
+            <span class="heart full" id="heart-3">❤️</span>
+          </div>
+        </div>
+
+        <div class="status-card" id="key-card" title="Gate Key Status">
+          <span class="status-label">RUNIC KEY</span>
+          <div class="key-status-badge not-found" id="key-badge">
+            <span class="key-icon">🔑</span>
+            <span id="key-text">NOT FOUND</span>
+          </div>
+        </div>
+
+        <div class="status-card" id="door-card" title="Runic Gate Status">
+          <span class="status-label">RUNIC GATE</span>
+          <div class="door-status-badge locked" id="door-badge">
+            <span class="door-icon">🔒</span>
+            <span id="door-text">LOCKED</span>
+          </div>
+        </div>
+
+        <button id="btn-audio" class="btn-icon" title="Toggle Atmospheric Audio">
+          <span id="audio-icon">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container: Game Canvas on Left/Center, DSA Stack Visualizer on Right -->
+    <main class="main-layout">
+
+      <!-- LEFT / CENTER: Game Viewport -->
+      <section class="game-section">
+        <div class="canvas-wrapper">
+          <!-- Notification Toast Overlay -->
+          <div id="game-toast" class="game-toast hidden">
+            <span id="toast-icon">⚡</span>
+            <span id="toast-msg">Notification</span>
+          </div>
+
+          <!-- Natural Non-Intrusive Dialogue Bubble -->
+          <div id="game-dialogue" class="dialogue-bubble hidden">
+            <div class="dialogue-avatar" id="dialogue-avatar">🪓</div>
+            <div class="dialogue-body">
+              <span class="dialogue-speaker" id="dialogue-speaker">KRATOS</span>
+              <p class="dialogue-text" id="dialogue-text">"I need to find the key."</p>
+            </div>
+          </div>
+
+          <!-- The Game Canvas (15 cols x 10 rows) -->
+          <canvas id="game-canvas" width="750" height="500"></canvas>
+
+          <!-- On-screen Interactive Banner & Dialogs -->
+          <div id="game-modal" class="modal-backdrop hidden">
+            <div class="modal-card" id="modal-card">
+              <div class="modal-rune" id="modal-rune">ᚦ</div>
+              <h2 id="modal-title">MISSION COMPLETE</h2>
+              <p id="modal-quote">"YOU HAVE REACHED ME."</p>
+              <p id="modal-desc">Kratos navigated the frozen maze using the power of the Stack data structure.</p>
+              <div class="modal-actions">
+                <button id="modal-btn-primary" class="btn btn-primary">PLAY AGAIN</button>
+                <button id="modal-btn-undo" class="btn btn-secondary hidden">UNDO LAST MOVE</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Toolbar -->
+        <div class="controls-toolbar">
+          <div class="primary-controls">
+            <button id="btn-undo" class="btn btn-action btn-undo" title="Pop from Undo Stack, push to Redo Stack (Shortcut: Z)">
+              <span class="btn-kbd">Z</span>
+              <span class="btn-icon-text">↺ UNDO</span>
+            </button>
+            <button id="btn-redo" class="btn btn-action btn-redo" title="Pop from Redo Stack, push to Undo Stack (Shortcut: Y)">
+              <span class="btn-kbd">Y</span>
+              <span class="btn-icon-text">↻ REDO</span>
+            </button>
+            <button id="btn-restart" class="btn btn-action btn-restart" title="Reset maze and both Stacks (Shortcut: R)">
+              <span class="btn-kbd">R</span>
+              <span class="btn-icon-text">⟲ RESTART</span>
+            </button>
+          </div>
+
+          <!-- Virtual D-Pad for easy touch / mouse demo -->
+          <div class="dpad-container" title="Click or use WASD / Arrow Keys">
+            <div class="dpad-row">
+              <button class="dpad-btn" data-dir="UP" id="dpad-up">▲</button>
+            </div>
+            <div class="dpad-row">
+              <button class="dpad-btn" data-dir="LEFT" id="dpad-left">◀</button>
+              <button class="dpad-btn" data-dir="DOWN" id="dpad-down">▼</button>
+              <button class="dpad-btn" data-dir="RIGHT" id="dpad-right">▶</button>
+            </div>
+          </div>
+
+          <!-- Quick Help / Test Trigger & DSA Review Buttons -->
+          <div class="secondary-controls">
+            <button id="btn-run-test" class="btn btn-test" title="Automate test sequence: Move Right x2, Down, Left, Undo x2, Redo, New Move">
+              <span>▶ RUN TEST SEQUENCE</span>
+            </button>
+            <button id="btn-c-algorithm" class="btn btn-c-algo" title="View C algorithm for Undo/Redo Stack operations">
+              <span>📜 VIEW C ALGORITHM</span>
+            </button>
+            <button id="btn-inspect-state" class="btn btn-secondary" title="View current GameState memory object">
+              <span>{ } STATE JSON</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: DSA Stack Visualization Panel -->
+      <aside class="dsa-section">
+        <div class="dsa-header">
+          <div class="dsa-title-group">
+            <h2 class="dsa-title">DSA STACK MONITOR</h2>
+            <span class="lifo-pill">LIFO: LAST IN → FIRST OUT</span>
+          </div>
+          <div class="dsa-live-op" id="dsa-live-op">
+            <span class="op-tag">OP:</span>
+            <span class="op-name" id="live-op-name">READY</span>
+          </div>
+        </div>
+
+        <!-- The Two Stacks Container -->
+        <div class="stacks-split-view">
+
+          <!-- 1. UNDO STACK -->
+          <div class="stack-column" id="undo-stack-column">
+            <div class="stack-column-header">
+              <div class="stack-badge undo-badge">UNDO STACK</div>
+              <div class="stack-size" id="undo-size-badge">Size: 0</div>
+            </div>
+
+            <div class="stack-visual-wrapper">
+              <div class="stack-limit-mark top-mark">TOP (Next to POP) ↵</div>
+              <div class="stack-items-container" id="undo-items-container">
+                <!-- Stack Items Rendered Here Dynamically (Bottom to Top) -->
+                <div class="stack-empty-placeholder">Stack is Empty</div>
+              </div>
+              <div class="stack-limit-mark bottom-mark">BOTTOM (Base)</div>
+            </div>
+          </div>
+
+          <!-- 2. REDO STACK -->
+          <div class="stack-column" id="redo-stack-column">
+            <div class="stack-column-header">
+              <div class="stack-badge redo-badge">REDO STACK</div>
+              <div class="stack-size" id="redo-size-badge">Size: 0</div>
+            </div>
+
+            <div class="stack-visual-wrapper">
+              <div class="stack-limit-mark top-mark">TOP (Next to POP) ↵</div>
+              <div class="stack-items-container" id="redo-items-container">
+                <!-- Stack Items Rendered Here Dynamically -->
+                <div class="stack-empty-placeholder">Stack is Empty</div>
+              </div>
+              <div class="stack-limit-mark bottom-mark">BOTTOM (Base)</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Operation Log / DSA Explanation Feed -->
+        <div class="dsa-log-wrapper">
+          <div class="log-header">
+            <span class="log-title">STACK OPERATION TRACE</span>
+            <button id="btn-clear-log" class="btn-tiny" title="Clear log output">Clear</button>
+          </div>
+          <div class="log-feed" id="log-feed">
+            <div class="log-entry info">
+              <span class="log-time">00:00</span>
+              <span class="log-msg">Maze initialized. Initial state active.</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- Bottom Section: DSA Concept Banner & Student Information -->
+    <footer class="app-footer">
+      <div class="footer-dsa-summary">
+        <div class="summary-item">
+          <span class="summary-label">DATA STRUCTURE:</span>
+          <span class="summary-val highlight">STACK</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">PRINCIPLE:</span>
+          <span class="summary-val highlight">LIFO (Last In, First Out)</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">PUSH OPERATION:</span>
+          <span class="summary-val">Saves current state into Undo Stack on every valid movement</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">POP OPERATION:</span>
+          <span class="summary-val">Restores previous state from Undo Stack (and pushes to Redo)</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">REDO BRANCHING:</span>
+          <span class="summary-val">Making a new move clears Redo Stack (prevents timeline branch)</span>
+        </div>
+      </div>
+
+      <div class="footer-student-card">
+        <div class="student-name">Sriharan V A</div>
+        <div class="student-details">CSE A &bull; RA2511003040029</div>
+        <div class="project-tag">Data Structures &amp; Algorithms Project</div>
+      </div>
+    </footer>
+
+    <!-- State Inspector Modal -->
+    <div id="inspector-modal" class="modal-backdrop hidden">
+      <div class="inspector-card">
+        <div class="inspector-header">
+          <h3>CURRENT GAMESTATE OBJECT</h3>
+          <button id="btn-close-inspector" class="btn-icon">✕</button>
+        </div>
+        <pre class="json-code" id="state-json-display"></pre>
+        <p class="inspector-note">This JavaScript object is what gets PUSHED and POPPED on the call stack.</p>
+      </div>
+    </div>
+
+    <!-- C Algorithm Modal for DSA Review -->
+    <div id="c-algo-modal" class="modal-backdrop hidden">
+      <div class="c-algo-card">
+        <div class="c-algo-header">
+          <div class="c-algo-title-group">
+            <span class="c-badge">C LANGUAGE &bull; DSA REVIEW</span>
+            <h3>STACK ALGORITHM (UNDO / REDO)</h3>
+          </div>
+          <button id="btn-close-c-algo" class="btn-icon" title="Close">✕</button>
+        </div>
+
+        <!-- Concept Explanation -->
+        <div class="c-algo-explanation">
+          <div class="concept-chip"><strong>STACK:</strong> LIFO (Last In, First Out)</div>
+          <div class="concept-chip"><strong>UNDO:</strong> POP previous state from Undo Stack, PUSH to Redo</div>
+          <div class="concept-chip"><strong>REDO:</strong> POP state from Redo Stack, PUSH to Undo</div>
+          <div class="concept-chip highlight"><strong>NEW MOVE:</strong> PUSH current state &amp; CLEAR Redo Stack</div>
+        </div>
+
+        <!-- Code Block -->
+        <div class="c-code-container">
+          <pre class="c-code"><code id="c-code-display">/* C Implementation of Undo & Redo Using Two Stacks */
+
+#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+
+#define MAX_SIZE 100
+
+// 1. GAME STATE STRUCTURE
+typedef struct {
+    int playerX;
+    int playerY;
+    int health;
+    bool keyCollected;
+    bool doorOpen;
+} GameState;
+
+// 2. STACK STRUCTURE (LIFO: Last In, First Out)
+typedef struct {
+    GameState items[MAX_SIZE];
+    int top; // -1 when empty
+} Stack;
+
+void initStack(Stack *s) {
+    s-&gt;top = -1;
+}
+
+bool isEmpty(Stack *s) {
+    return s-&gt;top == -1;
+}
+
+bool isFull(Stack *s) {
+    return s-&gt;top == MAX_SIZE - 1;
+}
+
+// PUSH OPERATION: O(1)
+bool push(Stack *s, GameState state) {
+    if (isFull(s)) {
+        printf("Stack Overflow!\n");
+        return false;
+    }
+    s-&gt;items[++(s-&gt;top)] = state;
+    return true;
+}
+
+// POP OPERATION: O(1)
+GameState pop(Stack *s) {
+    GameState empty = {0};
+    if (isEmpty(s)) {
+        printf("Stack Underflow!\n");
+        return empty;
+    }
+    return s-&gt;items[(s-&gt;top)--];
+}
+
+// 3. UNDO OPERATION
+// Pop previous state from Undo Stack, save current state to Redo Stack
+bool undo(Stack *undoStack, Stack *redoStack, GameState *current) {
+    if (isEmpty(undoStack)) {
+        printf("Undo Stack is EMPTY!\n");
+        return false;
+    }
+    // Step A: Push current state to Redo Stack
+    push(redoStack, *current);
+
+    // Step B: Pop previous state from Undo Stack and restore
+    *current = pop(undoStack);
+    return true;
+}
+
+// 4. REDO OPERATION
+// Pop state from Redo Stack, save current state to Undo Stack
+bool redo(Stack *undoStack, Stack *redoStack, GameState *current) {
+    if (isEmpty(redoStack)) {
+        printf("Redo Stack is EMPTY!\n");
+        return false;
+    }
+    // Step A: Push current state to Undo Stack
+    push(undoStack, *current);
+
+    // Step B: Pop forward state from Redo Stack and restore
+    *current = pop(redoStack);
+    return true;
+}
+
+// 5. NEW MOVEMENT (Crucial DSA Stack Rule)
+// Pushes current state to Undo Stack and CLEARS Redo Stack
+void onNewMove(Stack *undoStack, Stack *redoStack, GameState *current, GameState nextState) {
+    // Step A: Push current state before move
+    push(undoStack, *current);
+
+    // Step B: Divergent path invalidates redo history -> CLEAR REDO STACK
+    redoStack-&gt;top = -1;
+
+    // Step C: Apply new move
+    *current = nextState;
+}</code></pre>
+        </div>
+
+        <div class="c-algo-footer">
+          <button id="btn-copy-c-code" class="btn btn-secondary btn-tiny-action">📋 Copy C Algorithm</button>
+          <span class="c-footer-note">College DSA Project &bull; God of War: Fate's Maze &bull; Sriharan V A</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
